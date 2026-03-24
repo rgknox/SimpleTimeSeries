@@ -1,0 +1,36 @@
+{
+  "coordinates": null,
+  "variable_groups": {
+    "Carbon": {
+      "FATES_GPP": {
+        "mult": 86400365,
+        "units": "kgC/m2/yr",
+        "nyrs_smoother": 5
+      },
+      "FATES_NPP": {
+        "mult": 86400365,
+        "units": "kgC/m2/yr",
+        "nyrs_smoother": 5
+      },
+      "FATES_VEGC_ABOVEGROUND": {
+        "mult": 1,
+        "units": "kgC/m2"
+      },
+      "TLAI": {
+        "mult": 1,
+        "units": "m2/m2"
+      }
+    },
+    "Soil_Carbon": {
+      "LITR1C_vr_L1":  {"expr": "LITR1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "reduce": {"index": 1}},
+      "LITR1C_vr_L5":  {"expr": "LITR1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "reduce": {"index": 5}},
+      "SOIL1C_vr_L1":  {"expr": "SOIL1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "reduce": {"index": 1}},
+      "SOIL1C_vr_L5":  {"expr": "SOIL1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "reduce": {"index": 5}},
+      "SOIL1C_vr_L10": {"expr": "SOIL1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "reduce": {"index": 10}}
+  },
+  "Soil_Carbon_Heatmaps": {
+      "LITR1C_vr": {"expr": "LITR1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "dim_range": [1, 16], "plot_type": "heatmap"},
+      "SOIL1C_vr": {"expr": "SOIL1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "dim_range": [1, 16], "plot_type": "heatmap"}
+  }
+  }
+}
