@@ -100,7 +100,7 @@ def build_series(datasets, labels, coord_filter):
             indices = list(range(n_coords))
 
         for rank, idx in enumerate(indices, start=1):
-            lbl = f"{file_label}{rank}"
+            lbl = file_label if len(indices) == 1 else f"{file_label}{rank}"
             if 'lndgrid' in ds.dims:
                 series.append((lbl, ds.isel(lndgrid=idx)))
             else:
@@ -216,7 +216,8 @@ def plot_2d_group(group_name, var_configs, series, savefigs, nametag):
                                  figsize=(4.0 * cols, 3.5 * rows),
                                  squeeze=False,
                                  sharex=True, sharey=True,
-                                 gridspec_kw={'hspace': 0, 'wspace': 0})
+                                 gridspec_kw={'hspace': 0, 'wspace': 0},
+                                 constrained_layout=True)
         axes_flat = axes.flatten()
 
         dim = config.get('extra_dim', None)
@@ -236,10 +237,10 @@ def plot_2d_group(group_name, var_configs, series, savefigs, nametag):
                 data = apply_smoother(data, config)
                 all_data.append(float(data.min()))
                 all_data.append(float(data.max()))
-                computed.append((lbl, data))
+                computed.append((lbl, data, ds))
             except (KeyError, ValueError) as e:
                 print(f"  Skipping {expression} for {lbl}: {e}")
-                computed.append((lbl, None))
+                computed.append((lbl, None, ds))
 
         vmin = config['vrange'][0] if 'vrange' in config else (min(all_data) if all_data else 0)
         vmax = config['vrange'][1] if 'vrange' in config else (max(all_data) if all_data else 1)
@@ -247,7 +248,7 @@ def plot_2d_group(group_name, var_configs, series, savefigs, nametag):
         norm = mcolors.LogNorm(vmin=max(vmin, 1e-10), vmax=vmax) if logscale else mcolors.Normalize(vmin=vmin, vmax=vmax)
 
         im = None
-        for i, (lbl, data) in enumerate(computed):
+        for i, (lbl, data, ds) in enumerate(computed):
             ax = axes_flat[i]
             ax.set_title(lbl)
             if data is None:
@@ -268,9 +269,19 @@ def plot_2d_group(group_name, var_configs, series, savefigs, nametag):
             except Exception:
                 time_vals = np.arange(plot_data.sizes['time'])
 
-            # 1-based y-axis indices
-            y_start = dim_range[0] if dim_range else 1
-            y_vals = np.arange(y_start, y_start + plot_data.sizes[dim])
+            # Use coordinate values if available, otherwise fall back to 1-based indices
+            dim_invert = config.get('dim_invert', 'no') == 'yes'
+            dim_label = config.get('dim_label', None)
+            if dim in ds.coords:
+                coord_vals = ds[dim].values
+                if dim_slice is not None:
+                    coord_vals = coord_vals[dim_slice]
+                y_vals = -coord_vals if dim_invert else coord_vals
+                ylabel = dim_label if dim_label else dim
+            else:
+                y_start = dim_range[0] if dim_range else 1
+                y_vals = np.arange(y_start, y_start + plot_data.sizes[dim])
+                ylabel = dim_label if dim_label else dim
 
             im = ax.pcolormesh(
                 time_vals,
@@ -278,7 +289,8 @@ def plot_2d_group(group_name, var_configs, series, savefigs, nametag):
                 plot_data.values.T,
                 norm=norm, cmap='viridis', shading='auto'
             )
-            ax.set_ylabel(dim)
+            if i % cols == 0:
+                ax.set_ylabel(ylabel)
             ax.set_xlabel("Year")
             plt.setp(ax.get_xticklabels(), rotation=30, ha='right')
 
@@ -286,11 +298,9 @@ def plot_2d_group(group_name, var_configs, series, savefigs, nametag):
             axes_flat[j].axis('off')
 
         if im is not None:
-            fig.subplots_adjust(right=0.88)
-            cbar_ax = fig.add_axes([0.91, 0.15, 0.02, 0.7])
-            fig.colorbar(im, cax=cbar_ax, label=config.get('units', ''))
+            fig.colorbar(im, ax=axes_flat[:len(computed)], location='right', shrink=0.8, label=config.get('units', ''))
 
-        fig.suptitle(f"{group_name} — {expression}", y=1.01)
+        fig.suptitle(f"{group_name} — {expression}")
         _save_or_show(fig, savefigs, nametag, f"{group_name}_{expression}_heatmap")
 
 

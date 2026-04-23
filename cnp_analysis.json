@@ -1,25 +1,138 @@
 {
   "coordinates": null,
-  "variable_groups": {
-    "Carbon": {
-      "FATES_GPP": {
-        "mult": 86400365,
-        "units": "kgC/m2/yr",
-        "nyrs_smoother": 5
+    "variable_groups": {
+	"Stand Structure":{
+	    "TLAI": {
+		"mult": 1,
+		"units": "m2/m2",
+		"nyrs_smoother": 5
+	    },
+	    "LIVE AGB": {
+		"expr": "FATES_VEGC_ABOVEGROUND",
+		"mult": 1,
+		"units": "kgC/m2",
+		"nyrs_smoother": 5
+	    },  
+	    "LIVE AGB (EARLY)": {
+		"expr": "FATES_VEGC_PF",
+		"mult": 1,
+		"units": "kgC/m2",
+		"extra_dim": "fates_levpft",
+		"nyrs_smoother": 5,
+		"reduce": {"index": 1}
+	    },
+	    "LIVE AGB (LATE)": {
+		"expr": "FATES_VEGC_PF",
+		"mult": 1,
+		"units": "kgC/m2",
+		"extra_dim": "fates_levpft", 
+		"reduce": {"index": 2},
+		"nyrs_smoother": 5
+	    }
       },
-      "FATES_NPP": {
-        "mult": 86400365,
-        "units": "kgC/m2/yr",
-        "nyrs_smoother": 5
+      "Uptake Dynamics":{
+	"UPTAKE [NH4]":{
+	    "expr":"FATES_NH4UPTAKE",
+	    "units": "gN/m2/y",
+	    "mult": 31536000,
+	    "nyrs_smoother": 5
+	},
+	"UPTAKE [NO3]":{
+	    "expr":"FATES_NO3UPTAKE",
+	    "units": "gN/m2/y",
+	    "mult": 31536000,
+	    "nyrs_smoother": 5
+	},
+	"VMAX [NH4]": {
+	    "expr":"FATES_VMAXNH4",
+            "mult": 1000,
+            "units": "g/m3/s",
+	    "nyrs_smoother": 5
+	},
+	"VMAX [NO3]": {
+	    "expr":"FATES_VMAXNO3",
+            "mult": 1000,
+            "units": "g/m3/s",
+	    "nyrs_smoother": 5
+	},	
+	"[NH4]": {
+	    "expr":"SMIN_NH4",
+            "mult": 1,
+            "units": "g/m2",
+	    "nyrs_smoother": 5
+	},
+	"[NO3]": {
+	    "expr":"SMIN_NO3",
+            "mult": 1,
+            "units": "g/m3",
+	    "vrange":[0,0.004],
+	    "nyrs_smoother": 5
+	},
+	"N STORAGE FRAC": {
+	    "expr":"FATES_STOREN_TF",
+	    "mult": 1,
+	    "units": "gN/gN",
+	    "nyrs_smoother":5
+	},
+	"C STORAGE FRAC": {
+	    "expr":"FATES_STOREC_TF",
+	    "mult": 1,
+	    "units": "gC/gC",
+	    "nyrs_smoother":5
+	},
+	"N EFFLUX FRAC":{
+	    "expr":"FATES_NEFFLUX/(FATES_NH4UPTAKE+FATES_NO3UPTAKE)",
+	    "units": "gN/gN",
+	    "vrange":[0,0.05],
+	    "nyrs_smoother": 5
+	},
+	"C EFFLUX FRAC":{
+	    "expr":"FATES_EXCESS_RESP/FATES_NPP",
+	    "units": "gC/gC",
+	    "nyrs_smoother": 5
+	}
+    },
+    "EARLY_LATE":{
+      "NPP_EARLY": {
+	  "expr": "FATES_NPP_PF",
+          "mult": 31536000,
+          "units": "kgC/m2/yr",
+	  "extra_dim": "fates_levpft", 
+	 "reduce": {"index": 1},
+	 "nyrs_smoother": 5
       },
-      "FATES_VEGC_ABOVEGROUND": {
-        "mult": 1,
-        "units": "kgC/m2"
+      "NPP_LATE": {
+	  "expr": "FATES_NPP_PF",
+          "mult": 31536000,
+          "units": "kgC/m2/yr",
+	  "extra_dim": "fates_levpft", 
+	  "reduce": {"index": 2},
+	  "nyrs_smoother": 5
+      }, 
+      "L2FR_CANOPY_REC_EARLY": {
+	  "expr": "FATES_L2FR_CANOPY_REC_PF",
+          "mult": 1,
+          "units": "kgC/m2",
+	  "extra_dim": "fates_levpft",
+	  "vrange":[0,2],
+	  "reduce": {"index": 1}
       },
-      "TLAI": {
-        "mult": 1,
-        "units": "m2/m2"
+      "L2FR_CANOPY_REC_LATE": {
+	  "expr": "FATES_L2FR_CANOPY_REC_PF",
+          "mult": 1,
+          "units": "kgC/m2",
+	  "extra_dim": "fates_levpft",
+	  "vrange":[0,2],
+	  "reduce": {"index": 2}
       }
+    },
+    "Plant_Demography_Heatmaps": {
+	"AGB": {"expr": "FATES_VEGC_ABOVEGROUND_SZ", "mult": 1, "units": "kgC/m2", "extra_dim": "fates_levscls", "dim_label": "DBH [cm]", "plot_type": "heatmap"}
+    },
+      "Uptake":{
+	  "Fineroot Density": {"expr": "FATES_FROOTC_SL", "mult": 1000, "vrange":[0.0001,500], "units": "gC/m3", "logscale": "yes", "extra_dim": "levsoi", "dim_label": "Soil Depth [cm]", "dim_invert": "yes", "plot_type": "heatmap"},
+	  "NH4 Concentration": {"expr": "SMIN_NH4_vr", "mult": 1, "units": "gN/m3", "logscale": "yes", "extra_dim": "levdcmp", "dim_label": "Soil Depth [cm]","dim_range": [1, 10], "dim_invert": "yes", "plot_type": "heatmap"},
+	  "H2OSOI": {"expr": "H2OSOI", "mult": 1, "units": "m3/m3", "logscale": "yes", "extra_dim": "levgrnd", "dim_label": "Soil Depth [cm]","dim_range": [1, 10], "dim_invert": "yes", "plot_type": "heatmap"}	  
     },
     "Soil_Carbon": {
       "LITR1C_vr_L1":  {"expr": "LITR1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "reduce": {"index": 1}},
@@ -28,9 +141,10 @@
       "SOIL1C_vr_L5":  {"expr": "SOIL1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "reduce": {"index": 5}},
       "SOIL1C_vr_L10": {"expr": "SOIL1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "reduce": {"index": 10}}
   },
-  "Soil_Carbon_Heatmaps": {
-      "LITR1C_vr": {"expr": "LITR1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "dim_range": [1, 16], "plot_type": "heatmap"},
-      "SOIL1C_vr": {"expr": "SOIL1C_vr", "mult": 1, "units": "gC/m3", "extra_dim": "levdcmp", "dim_range": [1, 16], "plot_type": "heatmap"}
+  "Soil_Litter_Heatmaps": {
+      "LITR1C": {"expr": "LITR1C_vr", "mult": 1, "units": "gC/m3", "vrange":[0.001,500], "logscale": "yes", "extra_dim": "levdcmp", "dim_invert": "yes","dim_range": [1, 10], "plot_type": "heatmap"},
+      "LITR2C": {"expr": "LITR2C_vr", "mult": 1, "units": "gC/m3", "vrange":[0.001,500], "logscale": "yes", "extra_dim": "levdcmp", "dim_invert": "yes","dim_range": [1, 10], "plot_type": "heatmap"},
+      "LITR3C": {"expr": "LITR3C_vr", "mult": 1, "units": "gC/m3", "vrange":[0.001,500], "logscale": "yes", "extra_dim": "levdcmp", "dim_invert": "yes","dim_range": [1, 10], "plot_type": "heatmap"}
   }
   }
 }
