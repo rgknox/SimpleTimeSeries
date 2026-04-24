@@ -321,7 +321,7 @@ def _save_or_show(fig, savefigs, nametag, name):
 
 
 def load_datasets(files):
-    return [xr.open_dataset(f, decode_times=True) for f in files]
+    return [xr.open_dataset(f, decode_times=True, engine='netcdf4') for f in files]
 
 
 # ---------------------------------------------------------------------------
