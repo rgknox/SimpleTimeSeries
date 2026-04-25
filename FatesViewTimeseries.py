@@ -119,6 +119,13 @@ def plot_1d_group(group_name, var_configs, series, savefigs, nametag):
         'legend.fontsize': 10, 'font.family': 'sans-serif'
     })
 
+    # Tol "muted" colorblind-safe palette (10 colors)
+    CB_COLORS = [
+        '#CC6677', '#332288', '#DDCC77', '#117733',
+        '#88CCEE', '#882255', '#44AA99', '#999933',
+        '#AA4499', '#DDDDDD',
+    ]
+
     n = len(var_configs)
     rows, cols = get_grid_dims(n)
     fig, axes = plt.subplots(rows, cols, figsize=(5.0 * cols, 3.0 * rows),
@@ -131,7 +138,7 @@ def plot_1d_group(group_name, var_configs, series, savefigs, nametag):
         # 'expr' overrides the key as the actual variable expression to evaluate
         eval_expr = config.get('expr', expression)
 
-        for lbl, ds in series:
+        for series_idx, (lbl, ds) in enumerate(series):
             try:
                 data = symbolic_eval(ds, eval_expr) * config.get('mult', 1)
             except (KeyError, ValueError) as e:
@@ -158,7 +165,8 @@ def plot_1d_group(group_name, var_configs, series, savefigs, nametag):
 
             # Convert cftime to decimal years for matplotlib
             times = get_time_axis(data.indexes['time'])
-            ax.plot(times, data.values.squeeze(), label=lbl)
+            color = CB_COLORS[series_idx % len(CB_COLORS)]
+            ax.plot(times, data.values.squeeze(), label=lbl, color=color)
 
         # Y range cap
         if 'vrange' in config:
